@@ -21,13 +21,13 @@ int estOperateur(char c) {
 }
 int estUnaire(char c) { return c == '#'; }
 void calculerUnaire(Pile* p) {
-    int a = removePile(p);
-    addPile(p, -a);
+    int a = removePileInt(p);
+    addPileInt(p, -a);
 }
 
 void calculer(Pile* pile, char c) {
-    int a = removePile(pile);
-    int b = removePile(pile);
+    int a = removePileInt(pile);
+    int b = removePileInt(pile);
     int result = 0;
     switch (c) {
         case '+':
@@ -43,7 +43,7 @@ void calculer(Pile* pile, char c) {
             result = a / b;
             break;
     }
-    addPile(pile, result);
+    addPileInt(pile, result);
 }
 int estSeparateur(char c) { return c == ' ' || c == '\t' || c == '\n'; }
 
@@ -70,13 +70,13 @@ int traitementNPI() {
                 j++;
             }
             nombre[j] = '\0';
-            addPile(p, atoi(nombre));
+            addPileInt(p, atoi(nombre));
         } else {
             RAGE_QUIT("Erreur lors du traitement de la chaine de caractère");
         }
         i++;
     }
-    return removePile(p);
+    return removePileInt(p);
 }
 
 int checkParenthese(char* str) {
@@ -108,7 +108,7 @@ char* converPostFixe_to_NPI(char* str) {
     char* result = malloc(sizeof(char) * 100);
     int i = 0;
     int j = 0;
-    int c;
+    char c;
     while (str[i] != '\0') {
         while (estSeparateur(str[i])) i++;
         if (str[i] == '\0')
@@ -124,30 +124,34 @@ char* converPostFixe_to_NPI(char* str) {
             result[j++] = ' ';
         } else if (str[i] == '(') {
             printf("je lis une parenthese ouvrante\n");
-            addPile(p, str[i]);
+            addPileChar(p, str[i]);
+            printPile(p);
         } else if (str[i] == ')') {
             printf("je lis une parenthese fermante\n");
-            while (c = removePile(p) != '(') {
+            while (c = removePileChar(p) != '(') {
                 printf("%c", c);
                 result[j++] = c;
                 result[j++] = ' ';
             }
-            removePile(p);
+            // removePile(p);
         } else if (estOperateur(str[i]) || estUnaire(str[i])) {
             printf("je lis un operateur\n");
-            while (!isEmptyPile(p) && niveauPriorite(c = removePile(p)) >=
+            printPile(p);
+            while (!isEmptyPile(p) && niveauPriorite(c = removePileChar(p)) >=
                                           niveauPriorite(str[i])) {
                 result[j++] = c;
                 result[j++] = ' ';
             }
-            addPile(p, str[i]);
+            addPileChar(p, str[i]);
+            printPile(p);
+            printf("-------------------\n");
         } else {
             RAGE_QUIT("Erreur lors de la conversion de l'expression");
         }
         i++;
     }
     while (!isEmptyPile(p)) {
-        result[j++] = removePile(p);
+        result[j++] = removePileChar(p);
         result[j++] = ' ';
     }
     result[j] = '\0';
