@@ -46,11 +46,7 @@ void calculer(Pile* pile, char c) {
     addPileInt(pile, result);
 }
 int estSeparateur(char c) { return c == ' ' || c == '\t' || c == '\n'; }
-
-// Traitement de la chaine de caractère
-int traitementNPI() {
-    Pile* p = createPile();
-    char* str = lireTerminal();
+int NPI(Pile* p, char* str) {
     int i = 0;
 
     while (str[i] != '\0') {
@@ -77,6 +73,12 @@ int traitementNPI() {
         i++;
     }
     return removePileInt(p);
+}
+// Traitement de la chaine de caractère
+int traitementNPI() {
+    Pile* p = createPile();
+    char* str = lireTerminal();
+    return NPI(p, str);
 }
 
 int checkParenthese(char* str) {
@@ -114,37 +116,30 @@ char* converPostFixe_to_NPI(char* str) {
         if (str[i] == '\0')
             break;
         else if (estNombre(str[i])) {
-            printf("Nombre: %c\n", str[i]);
             while (!estSeparateur(str[i]) && str[i] != '\0') {
                 result[j] = str[i];
                 i++;
                 j++;
             }
-            result[j++] = str[i];
             result[j++] = ' ';
         } else if (str[i] == '(') {
-            printf("je lis une parenthese ouvrante\n");
             addPileChar(p, str[i]);
-            printPile(p);
+
         } else if (str[i] == ')') {
-            printf("je lis une parenthese fermante\n");
-            while (c = removePileChar(p) != '(') {
-                printf("%c", c);
+            while ((c = removePileChar(p)) != '(') {
                 result[j++] = c;
                 result[j++] = ' ';
             }
-            // removePile(p);
         } else if (estOperateur(str[i]) || estUnaire(str[i])) {
-            printf("je lis un operateur\n");
-            printPile(p);
-            while (!isEmptyPile(p) && niveauPriorite(c = removePileChar(p)) >=
-                                          niveauPriorite(str[i])) {
+            c = removePileChar(p);
+            while (!isEmptyPile(p) &&
+                   niveauPriorite(c) >= niveauPriorite(str[i])) {
                 result[j++] = c;
                 result[j++] = ' ';
+                c = removePileChar(p);
             }
+            if (c == '(') addPileChar(p, c);
             addPileChar(p, str[i]);
-            printPile(p);
-            printf("-------------------\n");
         } else {
             RAGE_QUIT("Erreur lors de la conversion de l'expression");
         }
@@ -158,13 +153,14 @@ char* converPostFixe_to_NPI(char* str) {
     return result;
 }
 int traitementInfixe() {
+    Pile* p = createPile();
     char* strPost = lireTerminal();
 
     if (!checkParenthese(strPost)) {
         RAGE_QUIT("Erreur de parenthèse");
     }
     char* strNPI = converPostFixe_to_NPI(strPost);
-    printf("%s", strNPI);
-    return 5;
-    // return traitementNPI(strNPI);
+    printf("%s\n", strNPI);
+
+    return NPI(p, strNPI);
 }
